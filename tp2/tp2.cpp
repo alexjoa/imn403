@@ -38,7 +38,6 @@ DATE : 15 mars 2021
 GLint windW, windH;
 MouseEvent	lastMouseEvt;
 CamInfo	gCam;
-GLboolean moveAxis = GL_FALSE;
 bool CarteHauteur = true;
 
 float pas[] = { 0.01, 0.05, 0.1, 0.2, 0.4, 1.0, 2.0, 5.0, 10.0 };
@@ -47,18 +46,16 @@ float pas_echantillionnage = pas[p];
 int objectResolution = ceil(10.0 / pas_echantillionnage);
 float f_max= 1.0;
 int nb_isocontours = 3;
+int current_isocontour = 0;
 int nb_segment;
+float delta_v = 0.0;
+std::vector<float> v_isocontours;
 
 // Transformation modes
 enum
 {
 	Camera,
-	ModeTranslateX,
-	ModeTranslateY,
-	ModeTranslateZ,
-	ModeRotateX,
-	ModeRotateY,
-	ModeRotateZ,
+	Isocontours,
 	ActionReset,
 	ActionQuit
 };
@@ -83,20 +80,20 @@ int LastPosX, LastPosY;
 	Vertex Array IDs
 	Vertex Buffer IDs
 */
-unsigned int vaoCubeID;
-unsigned int vboCubeID;
+unsigned int vaoPlaneID;
+unsigned int vboPlaneID;
 
 GLuint colorbuffer;
 GLuint colorbuffer1;
 
-unsigned int vaoAxisID;
-unsigned int vboAxisID;
+unsigned int vaoIsoID;
+unsigned int vboIsoID;
 
 // Transformation matrices
 glm::mat4 projectionMatrix;
 glm::mat4 viewMatrix;
-glm::mat4 cubeModelMatrix = glm::mat4(1.0f);
-glm::mat4 axisModelMatrix = glm::mat4(1.0f);
+glm::mat4 planeModelMatrix = glm::mat4(1.0f);
+glm::mat4 isoModelMatrix = glm::mat4(1.0f);
 
 
 // Shader
@@ -107,6 +104,11 @@ std::vector< std::vector<float> > F;
 float deg2rad(float deg)
 {
 	return	0.01745329251994329547437168059786927187815f * deg;
+}
+
+float functionF(float x, float y)
+{
+	return 2.0 * exp(-(x*x + y * y)) + exp(-(pow(x - 3.0, 2.0) + pow(y - 3.0, 2.0)));
 }
 
 
@@ -124,7 +126,7 @@ void echantillonnage()
 		for (size_t j = 0; j <= objectResolution; ++j)
 		{
 			y = -5.0 + j * pas_echantillionnage;
-			f = 2.0 * exp(-(x*x+y*y)) + exp(-(pow(x-3.0,2.0)+ pow(y-3.0, 2.0)));
+			f = functionF(x, y);
 			column.push_back(f);
 			max = (max < fabs(f)) ? fabs(f) : max;
 		}
@@ -206,8 +208,6 @@ void initCamParameters()
 
 void initMatrices(void)
 {
-	
-
 	float z = gCam.r*cos(deg2rad(gCam.theta))*cos(deg2rad(gCam.phi));
 	float x = gCam.r*sin(deg2rad(gCam.theta))*cos(deg2rad(gCam.phi));
 	float y = gCam.r*sin(deg2rad(gCam.phi));
@@ -270,12 +270,12 @@ void initPlane(void)
 	}
 
 	// Create our vertex array object
-	glGenVertexArrays(1, &vaoCubeID);
-	glBindVertexArray(vaoCubeID);
+	glGenVertexArrays(1, &vaoPlaneID);
+	glBindVertexArray(vaoPlaneID);
 
 	// Create our vertex buffer object
-	glGenBuffers(1, &vboCubeID);
-	glBindBuffer(GL_ARRAY_BUFFER, vboCubeID);
+	glGenBuffers(1, &vboPlaneID);
+	glBindBuffer(GL_ARRAY_BUFFER, vboPlaneID);
 
 	// Copy the vertices on the GPU in the "in_Position" variable (see vertex shader).
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
@@ -302,10 +302,10 @@ void drawPlane(void)
 	// Copy the matrices and the color on the GPU: See the vertex and the fragment shader.
 	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &cubeModelMatrix[0][0]);
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &planeModelMatrix[0][0]);
 
 	// Draw our object
-	glBindVertexArray(vaoCubeID);
+	glBindVertexArray(vaoPlaneID);
 
 	// 2nd attribute buffer : colors
 	glEnableVertexAttribArray(1);
@@ -389,16 +389,27 @@ void getArretes(int index, bool &a0, bool &a1, bool &a2, bool &a3, int &nb_arret
 }
 
 
+void initIsocontourV()
+{
+	std::vector<float> new_v;
+	float v_step = f_max / (nb_isocontours + 1.0);
+	for (int i = 1; i <= nb_isocontours; i++)
+	{
+		new_v.push_back(float(i)*v_step);
+	}
+	v_isocontours = new_v;
+}
+
+
 void initIsocontours()
 {
 	float s = -5.f;
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec3> colors;
-	glm::vec3 color;
-	if (color_map == rainbow || color_map == grayscale || color_map == diverging)
+	/*if (color_map == rainbow || color_map == grayscale || color_map == diverging)
 		color = glm::vec3(1.0,0.0,0.0);
 	else
-		color = glm::vec3(0.0, 0.4, 1.0);
+		color = glm::vec3(0.0, 0.4, 1.0);*/
 
 	int mask0{ 0b0000'0001 }; // represents bit 0
 	int mask1{ 0b0000'0010 }; // represents bit 1
@@ -409,11 +420,12 @@ void initIsocontours()
 	nb_segment = 0;
 	bool a0, a1, a2, a3;
 	float v, delta, deltaZ1, deltaZ2;
-	float v_step = f_max / (nb_isocontours+1.0);
 
-	for (int n = 1; n <= nb_isocontours; n++)
+	for (int n = 0; n < nb_isocontours; n++)
 	{
-		v = float(n) * v_step;
+		v = v_isocontours[n];
+		glm::vec3 color = glm::vec3(1.0, 1.0, 1.0) - getFcolor(v); //Prend la couleur inverse de la color_map pour etre bien visible.
+
 		for (int i = 0; i < objectResolution; i++)	//pour tout les vertex en x
 		{
 			for (int j = 0; j < objectResolution; j++)		//pour tout les vertex en y
@@ -510,12 +522,12 @@ void initIsocontours()
 	}
 	
 	// Create our vertex array object
-	glGenVertexArrays(1, &vaoAxisID);
-	glBindVertexArray(vaoAxisID);
+	glGenVertexArrays(1, &vaoIsoID);
+	glBindVertexArray(vaoIsoID);
 
 	// Create our vertex buffer object
-	glGenBuffers(1, &vboAxisID);
-	glBindBuffer(GL_ARRAY_BUFFER, vboAxisID);
+	glGenBuffers(1, &vboIsoID);
+	glBindBuffer(GL_ARRAY_BUFFER, vboIsoID);
 
 	// Copy the vertices on the GPU in the "in_Position" variable (see vertex shader).
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
@@ -545,10 +557,10 @@ void drawIsocontours()
 	// Copy the matrices and the color on the GPU: See the vertex and the fragment shader.
 	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &axisModelMatrix[0][0]);
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &isoModelMatrix[0][0]);
 
 	// Draw our object
-	glBindVertexArray(vaoAxisID);
+	glBindVertexArray(vaoIsoID);
 
 	// 2nd attribute buffer : colors
 	glEnableVertexAttribArray(1);
@@ -575,8 +587,7 @@ void MenuSelection(int value)
 {
 	if (value == ActionReset)
 	{
-		cubeModelMatrix = glm::mat4(1.0f);
-		axisModelMatrix = glm::mat4(1.0f);
+		planeModelMatrix = glm::mat4(1.0f);
 		initCamParameters();
 	}
 	else if (value == ActionQuit)
@@ -676,30 +687,12 @@ void MouseMove(int x, int y)
 			if (gCam.phi < -89) gCam.phi = -89.f;
 			break;
 
-		case ModeTranslateX:
-			transformMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(translate, 0.0f, 0.0f));
+		case Isocontours:
+			delta_v = -translate / 200.0;
+			delta_v = (delta_v < -v_isocontours[current_isocontour]) ? - v_isocontours[current_isocontour] + 0.001 : (delta_v > f_max) ? f_max : delta_v;
+			v_isocontours[current_isocontour] += delta_v;
+			initIsocontours();
 			break;
-
-		case ModeTranslateY:
-			transformMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, translate, 0.0f));
-			break;
-
-		case ModeTranslateZ:
-			transformMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, translate));
-			break;
-
-		case ModeRotateX:
-			transformMatrix = glm::rotate(glm::mat4(1.0f), rotate, glm::vec3(1.0f, 0.0f, 0.0f));
-			break;
-
-		case ModeRotateY:
-			transformMatrix = glm::rotate(glm::mat4(1.0f), rotate, glm::vec3(0.0f, 1.0f, 0.0f));
-			break;
-
-		case ModeRotateZ:
-			transformMatrix = glm::rotate(glm::mat4(1.0f), rotate, glm::vec3(0.0f, 0.0f, 1.0f));
-			break;
-
 		}
 	}
 	else if (lastMouseEvt.button == GLUT_MIDDLE_BUTTON)
@@ -709,7 +702,7 @@ void MouseMove(int x, int y)
 		if (gCam.r < 1)	gCam.r = 1.f;
 	}
 
-	cubeModelMatrix = cubeModelMatrix * transformMatrix;
+	planeModelMatrix = planeModelMatrix * transformMatrix;
 
 	glutPostRedisplay();
 
@@ -725,14 +718,14 @@ void keyboard(unsigned char key, int x, int y)
 	{
 	case '+':
 		if (p == 8)
-			std::cout << "Le pas d'echantillonnage maximum (10.0) est deja atteint.";
+			std::cout << "Le pas d'echantillonnage maximum (10.0) est deja atteint." << std::endl;
 		else
 		{
 			p++;
 			pas_echantillionnage = pas[p];
 			objectResolution = ceil(10.0 / pas_echantillionnage);
 		}
-		std::cout << "Le nouveau pas d'echantillonnage est : " << pas_echantillionnage;
+		std::cout << "Le nouveau pas d'echantillonnage est : " << pas_echantillionnage << std::endl;
 		echantillonnage();
 		initIsocontours();
 		initPlane();
@@ -740,14 +733,14 @@ void keyboard(unsigned char key, int x, int y)
 
 	case '-':
 		if (p == 0)
-			std::cout << "Le pas d'echantillonnage maximum (0.01) est deja atteint.";
+			std::cout << "Le pas d'echantillonnage minimum (0.01) est deja atteint." << std::endl;
 		else
 		{
 			p--;
 			pas_echantillionnage = pas[p];
 			objectResolution = ceil(10.0 / pas_echantillionnage);
 		}
-		std::cout << "Le nouveau pas d'echantillonnage est : " << pas_echantillionnage;
+		std::cout << "Le nouveau pas d'echantillonnage est : " << pas_echantillionnage << std::endl;
 		echantillonnage();
 		initIsocontours();
 		initPlane();
@@ -767,7 +760,14 @@ void keyboard(unsigned char key, int x, int y)
 		if (nb_isocontours > 0)
 		{
 			nb_isocontours--;
+			initIsocontourV();
 			initIsocontours();
+		}
+		std::cout << "Nombre d'isocontours : " << nb_isocontours << std::endl;
+		if (current_isocontour >= nb_isocontours)
+		{
+			current_isocontour = 0;
+			std::cout << "L'isocontour selectionne est : " << current_isocontour << std::endl;
 		}
 		break;
 
@@ -776,8 +776,18 @@ void keyboard(unsigned char key, int x, int y)
 		if (nb_isocontours < 20)
 		{
 			nb_isocontours++;
+			initIsocontourV();
 			initIsocontours();
 		}
+		std::cout << "Nombre d'isocontours : " << nb_isocontours << std::endl;
+		break;
+
+	case 's':
+	case 'S':
+		current_isocontour++;
+		if (current_isocontour == nb_isocontours)
+			current_isocontour = 0;
+		std::cout << "L'isocontour selectionne est : " << current_isocontour << std::endl;
 		break;
 
 	case 'd':
@@ -785,17 +795,6 @@ void keyboard(unsigned char key, int x, int y)
 		CarteHauteur = (CarteHauteur == true) ? false : true;
 		initPlane();
 		initIsocontours();
-		break;
-
-	case 'w':
-	case 'W':/*Wireframe*/
-		if (!wire) {
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		}
-		else {
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		}
-		wire = !wire;
 		break;
 
 	case 'q':/* quit*/
@@ -833,6 +832,7 @@ void init(void)
 	echantillonnage();
 
 	// Objects
+	initIsocontourV();
 	initIsocontours();
 	initPlane();	
 }
@@ -863,13 +863,8 @@ int main(int argc, char **argv)
 	// Menu creation
 	MenuId = glutCreateMenu(MenuSelection);
 	glutSetMenu(MenuId);
-	glutAddMenuEntry("Move camera", Camera);
-	glutAddMenuEntry("Translation X", ModeTranslateX);
-	glutAddMenuEntry("Translation Y", ModeTranslateY);
-	glutAddMenuEntry("Translation Z", ModeTranslateZ);
-	glutAddMenuEntry("Rotation X", ModeRotateX);
-	glutAddMenuEntry("Rotation Y", ModeRotateY);
-	glutAddMenuEntry("Rotation Z", ModeRotateZ);
+	glutAddMenuEntry("Deplace camera", Camera);
+	glutAddMenuEntry("Deplace isocontours", Isocontours);
 	glutAddMenuEntry("Retour a l'origine", ActionReset);
 	glutAddMenuEntry("Quitter", ActionQuit);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
