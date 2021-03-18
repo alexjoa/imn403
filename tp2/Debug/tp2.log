@@ -1,14 +1,14 @@
 ﻿  tp2.cpp
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(43): warning C4305: 'initialisation' : troncation de 'double' à 'float'
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(46): warning C4244: 'initialisation' : conversion de 'double' en 'int', perte possible de données
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(111): warning C4244: 'return' : conversion de 'double' en 'float', perte possible de données
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(121): warning C4018: '<=' : incompatibilité signed/unsigned
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(123): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(126): warning C4018: '<=' : incompatibilité signed/unsigned
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(128): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(146): warning C4305: 'initialisation' : troncation de 'double' à 'float'
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(157): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(158): warning C4244: '=' : conversion de 'const _Ty' en 'T', perte possible de données
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(44): warning C4305: 'initialisation' : troncation de 'double' à 'float'
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(47): warning C4244: 'initialisation' : conversion de 'double' en 'int', perte possible de données
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(121): warning C4244: 'return' : conversion de 'double' en 'float', perte possible de données
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(131): warning C4018: '<=' : incompatibilité signed/unsigned
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(133): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(136): warning C4018: '<=' : incompatibilité signed/unsigned
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(138): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(156): warning C4305: 'initialisation' : troncation de 'double' à 'float'
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(167): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(168): warning C4244: '=' : conversion de 'const _Ty' en 'T', perte possible de données
           with
           [
               _Ty=double
@@ -17,25 +17,6 @@ c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(158): 
           [
               T=float
           ]
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(159): warning C4244: '=' : conversion de 'const _Ty' en 'T', perte possible de données
-          with
-          [
-              _Ty=double
-          ]
-          and
-          [
-              T=float
-          ]
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(160): warning C4244: '=' : conversion de 'const _Ty' en 'T', perte possible de données
-          with
-          [
-              _Ty=double
-          ]
-          and
-          [
-              T=float
-          ]
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(168): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
 c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(169): warning C4244: '=' : conversion de 'const _Ty' en 'T', perte possible de données
           with
           [
@@ -54,33 +35,26 @@ c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(170): 
           [
               T=float
           ]
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(175): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(176): warning C4244: '=' : conversion de 'const _Ty' en 'float', perte possible de données
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(178): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(179): warning C4244: '=' : conversion de 'const _Ty' en 'T', perte possible de données
           with
           [
               _Ty=double
           ]
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(177): warning C4244: '=' : conversion de 'const _Ty' en 'float', perte possible de données
+          and
+          [
+              T=float
+          ]
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(180): warning C4244: '=' : conversion de 'const _Ty' en 'T', perte possible de données
           with
           [
               _Ty=double
           ]
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(178): warning C4244: '=' : conversion de 'const _Ty' en 'float', perte possible de données
-          with
+          and
           [
-              _Ty=double
+              T=float
           ]
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(179): warning C4244: '=' : conversion de 'const _Ty' en 'float', perte possible de données
-          with
-          [
-              _Ty=double
-          ]
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(184): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(185): warning C4244: '=' : conversion de 'const _Ty' en 'float', perte possible de données
-          with
-          [
-              _Ty=double
-          ]
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(185): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
 c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(186): warning C4244: '=' : conversion de 'const _Ty' en 'float', perte possible de données
           with
           [
@@ -91,9 +65,39 @@ c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(187): 
           [
               _Ty=double
           ]
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(395): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(691): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(692): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(726): warning C4244: '=' : conversion de 'double' en 'int', perte possible de données
-c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(741): warning C4244: '=' : conversion de 'double' en 'int', perte possible de données
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(188): warning C4244: '=' : conversion de 'const _Ty' en 'float', perte possible de données
+          with
+          [
+              _Ty=double
+          ]
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(189): warning C4244: '=' : conversion de 'const _Ty' en 'float', perte possible de données
+          with
+          [
+              _Ty=double
+          ]
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(194): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(195): warning C4244: '=' : conversion de 'const _Ty' en 'float', perte possible de données
+          with
+          [
+              _Ty=double
+          ]
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(196): warning C4244: '=' : conversion de 'const _Ty' en 'float', perte possible de données
+          with
+          [
+              _Ty=double
+          ]
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(197): warning C4244: '=' : conversion de 'const _Ty' en 'float', perte possible de données
+          with
+          [
+              _Ty=double
+          ]
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(405): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(418): warning C4018: '<' : incompatibilité signed/unsigned
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(460): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(730): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(731): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(741): warning C4244: '+=' : conversion de 'double' en 'GLfloat', perte possible de données
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(765): warning C4244: '=' : conversion de 'double' en 'int', perte possible de données
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(780): warning C4244: '=' : conversion de 'double' en 'int', perte possible de données
+c:\users\alexs\desktop\udes\hiver2021\visu-imn403\tp2\tp2_git\tp2\tp2.cpp(830): warning C4018: '<' : incompatibilité signed/unsigned
   tp2.vcxproj -> C:\Users\alexs\Desktop\UdeS\Hiver2021\Visu-IMN403\TP2\tp2_git\Debug\tp2.exe

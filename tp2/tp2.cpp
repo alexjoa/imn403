@@ -23,7 +23,7 @@ DATE : 15 mars 2021
 #include <iostream>
 #include <vector>
 #include <math.h>
-#include <algorithm> 
+#include <algorithm>
 
 //GLM Includes
 #include <glm/glm.hpp>
@@ -39,13 +39,14 @@ GLint windW, windH;
 MouseEvent	lastMouseEvt;
 CamInfo	gCam;
 bool CarteHauteur = true;
+bool manuelIso = true;
 
 float pas[] = { 0.01, 0.05, 0.1, 0.2, 0.4, 1.0, 2.0, 5.0, 10.0 };
 int p = 2;
 float pas_echantillionnage = pas[p];
 int objectResolution = ceil(10.0 / pas_echantillionnage);
 float f_max= 1.0;
-int nb_isocontours = 3;
+int nb_isocontours = -1;
 int current_isocontour = 0;
 int nb_segment;
 float delta_v = 0.0;
@@ -71,6 +72,14 @@ enum
 	diverging
 };
 int color_map = rainbow;
+
+std::string cm_names[] = {
+	"rainbow",
+	"grayscale",
+	"two_hue",
+	"heat_map",
+	"diverging"
+};
 
 // Mouse variables
 int LeftButtonIsPressed = GL_FALSE;
@@ -100,6 +109,7 @@ glm::mat4 isoModelMatrix = glm::mat4(1.0f);
 Shader* shader;
 
 std::vector< std::vector<float> > F;
+
 
 float deg2rad(float deg)
 {
@@ -389,7 +399,7 @@ void getArretes(int index, bool &a0, bool &a1, bool &a2, bool &a3, int &nb_arret
 }
 
 
-void initIsocontourV()
+void autoInitIsocontourV()
 {
 	std::vector<float> new_v;
 	float v_step = f_max / (nb_isocontours + 1.0);
@@ -400,16 +410,38 @@ void initIsocontourV()
 	v_isocontours = new_v;
 }
 
+void manuelInitIsocontourV()
+{
+	std::vector<float> new_v;
+	std::cout << "Initialisation des isocontours. Entrez " << nb_isocontours << " valeurs scalaires entre 0.0 et " << f_max << ":" << std::endl;
+	float v;
+	while(new_v.size()<nb_isocontours)
+	{
+		std::cin >> v;
+		if (v <= f_max && v >= 0.0)
+			new_v.push_back(v);
+		else
+			std::cout << "La valeur scalaire doit etre entre 0.0 et " << f_max << ":" << std::endl;
+	}
+	v_isocontours = new_v;
+}
+
+
+void initIsocontourV()
+{
+	if (!manuelIso)
+		autoInitIsocontourV();
+	else
+		manuelInitIsocontourV();
+}
+
 
 void initIsocontours()
 {
 	float s = -5.f;
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec3> colors;
-	/*if (color_map == rainbow || color_map == grayscale || color_map == diverging)
-		color = glm::vec3(1.0,0.0,0.0);
-	else
-		color = glm::vec3(0.0, 0.4, 1.0);*/
+	glm::vec3 color;
 
 	int mask0{ 0b0000'0001 }; // represents bit 0
 	int mask1{ 0b0000'0010 }; // represents bit 1
@@ -419,12 +451,15 @@ void initIsocontours()
 	int index, nb_arretes;
 	nb_segment = 0;
 	bool a0, a1, a2, a3;
-	float v, delta, deltaZ1, deltaZ2;
+	float v, z, delta, deltaZ1, deltaZ2;
 
 	for (int n = 0; n < nb_isocontours; n++)
 	{
 		v = v_isocontours[n];
-		glm::vec3 color = glm::vec3(1.0, 1.0, 1.0) - getFcolor(v); //Prend la couleur inverse de la color_map pour etre bien visible.
+		color = glm::vec3(1.0, 1.0, 1.0) - getFcolor(v); //Prend la couleur inverse de la color_map pour etre bien visible.
+		z = v + 0.01;
+		if (color_map == grayscale)
+			color = glm::vec3(1.0, 0.0, 0.0); //L'inverse du grayscale n'est pas tres visible.
 
 		for (int i = 0; i < objectResolution; i++)	//pour tout les vertex en x
 		{
@@ -454,7 +489,7 @@ void initIsocontours()
 							deltaZ1 = fabs(F[i][j] - v);
 							deltaZ2 = fabs(F[i + 1][j] - v);
 							delta = deltaZ1 / (deltaZ1 + deltaZ2);
-							vertices.push_back(glm::vec3(s + i * pas_echantillionnage + (delta * pas_echantillionnage), s + j * pas_echantillionnage, (CarteHauteur == true) ? v : 0.f));
+							vertices.push_back(glm::vec3(s + i * pas_echantillionnage + (delta * pas_echantillionnage), s + j * pas_echantillionnage, (CarteHauteur == true) ? z : 0.01f));
 							colors.push_back(color);
 						}
 						if (a1)
@@ -462,7 +497,7 @@ void initIsocontours()
 							deltaZ1 = fabs(F[i + 1][j] - v);
 							deltaZ2 = fabs(F[i + 1][j + 1] - v);
 							delta = deltaZ1 / (deltaZ1 + deltaZ2);
-							vertices.push_back(glm::vec3(s + (i + 1) * pas_echantillionnage, s + j * pas_echantillionnage + (delta * pas_echantillionnage), (CarteHauteur == true) ? v : 0.f));
+							vertices.push_back(glm::vec3(s + (i + 1) * pas_echantillionnage, s + j * pas_echantillionnage + (delta * pas_echantillionnage), (CarteHauteur == true) ? z : 0.01f));
 							colors.push_back(color);
 						}
 						if (a2)
@@ -470,7 +505,7 @@ void initIsocontours()
 							deltaZ1 = fabs(F[i][j + 1] - v);
 							deltaZ2 = fabs(F[i + 1][j + 1] - v);
 							delta = deltaZ1 / (deltaZ1 + deltaZ2);
-							vertices.push_back(glm::vec3(s + i * pas_echantillionnage + (delta * pas_echantillionnage), s + (j + 1) * pas_echantillionnage, (CarteHauteur == true) ? v : 0.f));
+							vertices.push_back(glm::vec3(s + i * pas_echantillionnage + (delta * pas_echantillionnage), s + (j + 1) * pas_echantillionnage, (CarteHauteur == true) ? z : 0.01f));
 							colors.push_back(color);
 						}
 						if (a3)
@@ -478,7 +513,7 @@ void initIsocontours()
 							deltaZ1 = fabs(F[i][j] - v);
 							deltaZ2 = fabs(F[i][j + 1] - v);
 							delta = deltaZ1 / (deltaZ1 + deltaZ2);
-							vertices.push_back(glm::vec3(s + i * pas_echantillionnage, s + j * pas_echantillionnage + (delta * pas_echantillionnage), (CarteHauteur == true) ? v : 0.f));
+							vertices.push_back(glm::vec3(s + i * pas_echantillionnage, s + j * pas_echantillionnage + (delta * pas_echantillionnage), (CarteHauteur == true) ? z : 0.01f));
 							colors.push_back(color);
 						}
 
@@ -490,25 +525,25 @@ void initIsocontours()
 						deltaZ1 = fabs(F[i][j] - v);
 						deltaZ2 = fabs(F[i + 1][j] - v);
 						delta = deltaZ1 / (deltaZ1 + deltaZ2);
-						vertices.push_back(glm::vec3(s + i * pas_echantillionnage + (delta * pas_echantillionnage), s + j * pas_echantillionnage, (CarteHauteur == true) ? v : 0.f));
+						vertices.push_back(glm::vec3(s + i * pas_echantillionnage + (delta * pas_echantillionnage), s + j * pas_echantillionnage, (CarteHauteur == true) ? z : 0.01f));
 						colors.push_back(color);
 
 						deltaZ1 = fabs(F[i + 1][j] - v);
 						deltaZ2 = fabs(F[i + 1][j + 1] - v);
 						delta = deltaZ1 / (deltaZ1 + deltaZ2);
-						vertices.push_back(glm::vec3(s + (i + 1) * pas_echantillionnage, s + j * pas_echantillionnage + (delta * pas_echantillionnage), (CarteHauteur == true) ? v : 0.f));
+						vertices.push_back(glm::vec3(s + (i + 1) * pas_echantillionnage, s + j * pas_echantillionnage + (delta * pas_echantillionnage), (CarteHauteur == true) ? z : 0.01f));
 						colors.push_back(color);
 
 						deltaZ1 = fabs(F[i][j + 1] - v);
 						deltaZ2 = fabs(F[i + 1][j + 1] - v);
 						delta = deltaZ1 / (deltaZ1 + deltaZ2);
-						vertices.push_back(glm::vec3(s + i * pas_echantillionnage + (delta * pas_echantillionnage), s + (j + 1) * pas_echantillionnage, (CarteHauteur == true) ? v : 0.f));
+						vertices.push_back(glm::vec3(s + i * pas_echantillionnage + (delta * pas_echantillionnage), s + (j + 1) * pas_echantillionnage, (CarteHauteur == true) ? z : 0.01f));
 						colors.push_back(color);
 
 						deltaZ1 = fabs(F[i][j] - v);
 						deltaZ2 = fabs(F[i][j + 1] - v);
 						delta = deltaZ1 / (deltaZ1 + deltaZ2);
-						vertices.push_back(glm::vec3(s + i * pas_echantillionnage, s + j * pas_echantillionnage + (delta * pas_echantillionnage), (CarteHauteur == true) ? v : 0.f));
+						vertices.push_back(glm::vec3(s + i * pas_echantillionnage, s + j * pas_echantillionnage + (delta * pas_echantillionnage), (CarteHauteur == true) ? z : 0.01f));
 						colors.push_back(color);
 					}
 				}
@@ -520,7 +555,6 @@ void initIsocontours()
 		vertices.push_back(glm::vec3(0.0, 0.0, 0.0));
 		colors.push_back(glm::vec3(0.0, 0.0, 0.0));
 	}
-	
 	// Create our vertex array object
 	glGenVertexArrays(1, &vaoIsoID);
 	glBindVertexArray(vaoIsoID);
@@ -547,7 +581,7 @@ void drawIsocontours()
 	shader->bind(); // Bind our shader
 
 	// Set the line width
-	glLineWidth(5.0);
+	glLineWidth(3.0);
 
 	// Get the locations of our uniforms
 	int projectionMatrixLocation = glGetUniformLocation(shader->id(), "projectionMatrix");
@@ -574,7 +608,7 @@ void drawIsocontours()
 		(void*)0                          // array buffer offset
 	);
 
-	glDrawArrays(GL_LINES, 0, 2* nb_segment);
+	glDrawArrays(GL_LINES, 0, 2 * nb_segment);
 
 	glBindVertexArray(0);
 	glDisableVertexAttribArray(1);
@@ -596,6 +630,9 @@ void MenuSelection(int value)
 	}
 	else
 		CurrentMode = value;
+
+	if (CurrentMode == Isocontours)
+		std::cout << "L'isocontour selectionne est : " << current_isocontour << std::endl;
 
 	glutPostRedisplay();
 }
@@ -688,17 +725,20 @@ void MouseMove(int x, int y)
 			break;
 
 		case Isocontours:
-			delta_v = -translate / 200.0;
-			delta_v = (delta_v < -v_isocontours[current_isocontour]) ? - v_isocontours[current_isocontour] + 0.001 : (delta_v > f_max) ? f_max : delta_v;
-			v_isocontours[current_isocontour] += delta_v;
-			initIsocontours();
+			if (nb_isocontours != 0)
+			{
+				delta_v = -translate / 200.0;
+				delta_v = (delta_v < -v_isocontours[current_isocontour]) ? -v_isocontours[current_isocontour] + 0.001 : (delta_v > f_max) ? f_max : delta_v;
+				v_isocontours[current_isocontour] += delta_v;
+				initIsocontours();
+			}
 			break;
 		}
 	}
 	else if (lastMouseEvt.button == GLUT_MIDDLE_BUTTON)
 	{
 		// Zoom in/out
-		gCam.r += (float)(dx - dy);
+		gCam.r += (float)(dx - dy)/10.0;
 		if (gCam.r < 1)	gCam.r = 1.f;
 	}
 
@@ -711,7 +751,6 @@ void MouseMove(int x, int y)
 }
 
 
-bool wire = false;
 void keyboard(unsigned char key, int x, int y)
 {
 	switch (key)
@@ -751,6 +790,7 @@ void keyboard(unsigned char key, int x, int y)
 		color_map ++;
 		if (color_map == 5)
 			color_map = rainbow;
+		std::cout << "La colormap selectionne est : " << cm_names[color_map] << std::endl;
 		initPlane();
 		initIsocontours();
 		break;
@@ -760,7 +800,14 @@ void keyboard(unsigned char key, int x, int y)
 		if (nb_isocontours > 0)
 		{
 			nb_isocontours--;
-			initIsocontourV();
+			if (manuelIso)
+			{
+				v_isocontours.erase(v_isocontours.begin() + current_isocontour);
+				current_isocontour = 0;
+				std::cout << "L'isocontour " << current_isocontour << " est supprime. L'isocontour 0 est selectionne." << std::endl;
+			}
+			else
+				autoInitIsocontourV();
 			initIsocontours();
 		}
 		std::cout << "Nombre d'isocontours : " << nb_isocontours << std::endl;
@@ -776,10 +823,27 @@ void keyboard(unsigned char key, int x, int y)
 		if (nb_isocontours < 20)
 		{
 			nb_isocontours++;
-			initIsocontourV();
+			if (manuelIso)
+			{
+				std::cout << "Ajout d'un isocontour. Entrez une valeur scalaire entre 0.0 et " << f_max << ":" << std::endl;
+				float v;
+				while (v_isocontours.size() < nb_isocontours)
+				{
+					std::cin >> v;
+					if (v <= f_max && v >= 0.0)
+						v_isocontours.push_back(v);
+					else
+						std::cout << "La valeur scalaire doit etre entre 0.0 et " << f_max << ":" << std::endl;
+				}
+			}
+			else
+				autoInitIsocontourV();
+			
 			initIsocontours();
+			std::cout << "Nombre d'isocontours : " << nb_isocontours << std::endl;
 		}
-		std::cout << "Nombre d'isocontours : " << nb_isocontours << std::endl;
+		else
+			std::cout << "Le nombre d'isocontours maximal est deja atteint."<< std::endl;
 		break;
 
 	case 's':
@@ -788,6 +852,17 @@ void keyboard(unsigned char key, int x, int y)
 		if (current_isocontour == nb_isocontours)
 			current_isocontour = 0;
 		std::cout << "L'isocontour selectionne est : " << current_isocontour << std::endl;
+		break;
+
+	case 'a':
+	case 'A':
+		manuelIso = (manuelIso == true) ? false : true;
+		if (manuelIso)
+			std::cout << "Isocontour manuel."<< std::endl;
+		else
+			std::cout << "Isocontour automatique." << std::endl;
+		initIsocontourV();
+		initIsocontours();
 		break;
 
 	case 'd':
@@ -832,6 +907,19 @@ void init(void)
 	echantillonnage();
 
 	// Objects
+	std::cout << "Voulez-vous initialiser les isocontours manuellement? oui : 1 , non : 0." << std::endl;
+	std::cin >> manuelIso;
+	while (nb_isocontours == -1)
+	{
+		int n;
+		std::cout << "Entrez le nombre d'isocontours desire, entre 0 et 20 :" << std::endl;
+		std::cin >> n;
+		if (n >= 0 && n <= 20)
+			nb_isocontours = n;
+		else
+			std::cout << "Le nombre doit etre entre 0 et 20." <<std::endl;
+	}
+	
 	initIsocontourV();
 	initIsocontours();
 	initPlane();	
